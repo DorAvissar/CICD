@@ -1,53 +1,42 @@
 name: CI/CD Pipeline
 
-# Define events that trigger the workflow
 on:
   push:
-    branches:
-      - main  # Trigger on pushes to the 'main' branch
+    branches: [main]
 
 jobs:
   build:
-    # Define the environment for the build job
     runs-on: ubuntu-latest
-    
-    # Steps for the build job
     steps:
-      - name: Checkout code  # Check out the repository
+      - name: Checkout code
         uses: actions/checkout@v2
-        
-      - name: Login to DockerHub  # Log in to DockerHub
-        uses: docker/login-action@v2  # Updated DockerHub login action
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}  # DockerHub username from secrets
-          password: ${{ secrets.DOCKERHUB_TOKEN }}  # DockerHub token from secrets
-          
-      - name: Build and push Docker image  # Build and push the Docker image
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build, tag, and push image to DockerHub
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           IMAGE_NAME: my-image
         run: |
-          docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME .  # Build the Docker image
-          docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:latest  # Push the Docker image to DockerHub
+          docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME .
+          docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:latest
 
   test:
-    # Define the environment for the test job
     runs-on: ubuntu-latest
-    
-    # Steps for the test job
     steps:
-      - name: Checkout code  # Check out the repository
+      - name: Checkout code
         uses: actions/checkout@v2
-        
-      - name: Set up Python  # Set up the Python environment
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v1
         with:
-          python-version: '3.12'  # Use a specific Python version
-        
-      - name: Install dependencies  # Install dependencies from requirements.txt
+          python-version: '3.x'
+      - name: Install dependencies
         run: |
-          pip install --upgrade pip  # Upgrade pip
-          pip install -r requirements.txt  # Install dependencies from the requirements file
-        
-      - name: Run tests with pytest  # Run the tests with pytest
-        run: pytest test.py  # Run pytest with the specific test file
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Test with pytest
+        run: |
+          pip install pytest
+          pytest test.py
