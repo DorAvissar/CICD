@@ -1,17 +1,20 @@
-import pytest
+import unittest  # Importing the unittest framework
 from app import app  # Importing your Flask app
 
-# Define a test class for better organization
-class TestFlaskApp:
-    @pytest.fixture
-    def client(self):
-        """Fixture for setting up a test client."""
-        app.config['TESTING'] = True  # Set Flask app to testing mode
-        with app.test_client() as client:
-            yield client  # Provide the test client
+class TestFlaskApp(unittest.TestCase):
+    """Tests for the Flask application"""
 
-    def test_hello_world(self, client):
+    def setUp(self):
+        """Set up the test client for each test"""
+        app.config['TESTING'] = True  # Set the app to testing mode
+        self.client = app.test_client()  # Create a test client
+
+    def test_hello_world(self):
         """Test that the root endpoint returns 'Hello World!'"""
-        response = client.get('/')  # Get response from the root endpoint
-        assert response.status_code == 200  # Check that the status code is 200
-        assert b"Hello World!" in response.data  # Check that the response contains "Hello World!"
+        response = self.client.get('/')  # Get response from the root endpoint
+        self.assertEqual(response.status_code, 200)  # Assert that the status code is 200
+        self.assertIn(b"Hello World!", response.data)  # Assert that "Hello World!" is in the response data
+
+    def tearDown(self):
+        """Clean up after each test"""
+        pass  # You can add cleanup code here if needed
